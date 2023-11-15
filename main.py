@@ -1,20 +1,20 @@
 import random
 
-MAX_LINES = 3
-MAX_BET = 100
+MAX_LINES = 9
+MAX_BET = 1000
 MIN_BET = 1
 
-ROWS = 3
+ROWS = 9
 COLUMNS = 3
 
 symbol_count = {
   "A": 3,
   "B": 4,
-  "C": 6,
-  "D": 9
+  "C": 7,
+  "D": 13
 }
 
-symbol_count = {
+symbol_value = {
   "A": 5,
   "B": 4,
   "C": 3,
@@ -22,8 +22,16 @@ symbol_count = {
 }
 
 def check_winnings(columns, lines, bet, values):
+  winnings = 0
   for line in range(lines):
-    
+    symbol = columns[0][line]
+    for column in columns:
+      symbol_to_check = column[line]
+      if symbol != symbol_to_check:
+        break
+    else:
+      winnings += values[symbol] * bet
+  return winnings
 
 def get_slot_machine_spin(rows, cols, symbols: dict):
   all_symbols = []
@@ -66,7 +74,7 @@ def deposit():
 
 def get_num_of_lines():
   while True:
-    lines = input(f"Enter the numbers of lines to bet on (1-{MAX_LINES}). ")
+    lines = input(f"Enter the numbers of lines to bet on (1-{MAX_LINES}). Winning is determined on lines entered counted from the top. ")
     if lines.isdigit():
       lines = int(lines)
       if 1 <= lines <= MAX_LINES:
@@ -90,8 +98,7 @@ def get_bet():
       print("Please enter a number.")
   return lines
 
-def main():
-  balance  = deposit()
+def game(balance):
   lines = get_num_of_lines()
   while True:
     bet = get_bet()
@@ -102,8 +109,25 @@ def main():
     else:
       break
 
-  print(f"You are betting ${bet} on {lines} lines. Total bet is equal to ${bet * lines}")
+  confirm = input(f"You are betting ${bet} on {lines} lines. Total bet is equal to ${total_bet}. Press Enter to confirm or Q to quit. ")
+  if confirm == "q":
+    return balance
+
 
   slots = get_slot_machine_spin(ROWS, COLUMNS, symbol_count)
   print_slot_machine(slots)
+  winnings = check_winnings(slots, lines, bet, symbol_value)
+  print(f"You won ${winnings}!")
+  balance += winnings - total_bet
+  return balance
+
+def main():
+  balance = deposit()
+  while balance > 0:
+    print(f"Current balance is ${balance}")
+    spin = input("Enter any key to spin or Q to quit. ")
+    if spin == "q":
+      break
+    balance = game(balance)
+  print("You have run out of money. Please deposit more to keep playing.")
 main()
